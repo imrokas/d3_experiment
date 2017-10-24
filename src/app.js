@@ -1,4 +1,4 @@
-// SIMPLE DATA VIZUALIZATION
+// convert to svg
 const scores = [
 	{ name: "Alice", score: 96 },
 	{ name: "Billy", score: 83 },
@@ -8,20 +8,15 @@ const scores = [
 ];
 
 const update = d3.select('.chart')
-	.selectAll('div')
-	.data(scores, (d) => d ? d.name: this.innerText)
-	.style('color', 'blue');
-
-const enter = update.enter()
-	.append('div')
-	.text((d) => d.name)
-	.style('color', 'green');
-
-update.exit()
-	.remove();
-
-update.merge(enter)
-	.style('width', d => d.score + 'px')
-	.style('height', '50px')
-	.style('background', 'lightgreen')
-	.style('border', '1px solid black');
+	.append('svg')
+		.attr('width', 225)
+		.attr('height', 300)
+	.selectAll('rect')
+	.data(scores)
+	.enter()
+		.append('rect')
+		.attr('y', (d, i) => i * 33)
+		.style('width', d => d.score)
+		.text((d) => d.name)
+		.attr('class', 'bar');
+		
