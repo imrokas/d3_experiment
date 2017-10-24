@@ -21,7 +21,16 @@ const bar = d3.select('.chart')
 // add rectangles to g containers
 bar.append('rect')
 		.style('width', d => d.score)
-		.attr('class', 'bar');
+		.attr('class', 'bar')
+		// equivalent to :hover
+		.on('mouseover', function(d, i, elements) { // need to use function to have access to this
+			d3.select(this)
+				.classed('barOn', true)
+		})
+		.on('mouseout', function(d, i, elements) {
+			d3.select(this)
+				.classed('barOn', false)
+		});
 
 // add text to each rect
 bar.append('text')
