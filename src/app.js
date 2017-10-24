@@ -7,16 +7,25 @@ const scores = [
 	{ name: "Emily", score: 88 },
 ];
 
-const update = d3.select('.chart')
+const bar = d3.select('.chart')
 	.append('svg')
 		.attr('width', 225)
 		.attr('height', 300)
-	.selectAll('rect')
+	.selectAll('g')
 	.data(scores)
 	.enter()
-		.append('rect')
-		.attr('y', (d, i) => i * 33)
+		.append('g')
+		.attr('transform', (d, i) => `translate(0, ${i * 33})`);
+		// graphic container doesn't have typical y prop
+
+// add rectangles to g containers
+bar.append('rect')
 		.style('width', d => d.score)
-		.text((d) => d.name)
 		.attr('class', 'bar');
+
+// add text to each rect
+bar.append('text')
+	.attr('y', 20) // move text 20px up
+	.attr('x', 10) // move text 10px right
+	.text((d) => d.name);
 		
