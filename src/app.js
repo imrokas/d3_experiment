@@ -1,42 +1,20 @@
-// loading data from files
+// SELECTORS
 
+// // select single node
+// const link = d3.select('div')
+// console.log(link.nodes())
 
-// READING DATA
-// //json
-// d3.json("data/data.json", (data) => {
-// 	console.log("JSON DATA:", data);
-// });
+// // select multiple nodes
+// const links = d3.selectAll('a')
+// console.log(links.nodes
 
-// //csv
-// d3.csv("data/data.csv", (data) => {
-// 	console.log("CSV DATA:", data);
-// });
+// select from whole DOM
+const div = d3.select('div')
+console.log(div.nodes())
 
-// // tsv
-// d3.tsv("data/data.tsv", (data) => {
-// 	console.log("TSV DATA:", data);
-// });
+// select just from DIV, applies same caching as with jquery
+const divLinks = div.selectAll('a')
+console.log(divLinks.nodes())
+console.log('number of links:', divLinks.size())
 
-// MANIPULATING READ DATA
-d3.json("data/data.json", (data) => {
-	const getAge = (p) => p.age;
-	// get min
-	const min = d3.min(data, getAge);
-	console.log("MIN:", min);
-	// get max
-	const max = d3.max(data, getAge);
-	console.log("MAX:", max);
-	// find [min, max] values that can be used as domain for chart
-	const extent = d3.extent(data, (p) => p.age);
-	// create linear scale
-	var scales = d3.scaleLinear()
-		.domain(extent)
-		.range([0, 600]);
-
-	console.log(scales(37));
-	console.log(scales.invert(600));
-
-	// get a set of possible values
-	const ages = d3.set(data, getAge);
-	console.log('AGES:', ages.values())
-});
+// can use CSS selectors as well
