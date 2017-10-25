@@ -15,55 +15,75 @@ const svg = d3.select('.chart')
 		.attr('width', width + margin.left + margin.right)
 		.attr('height', height + margin.top + margin.bottom)
 		.call(responsivefy)
-		// .attr('viewBox', `0 0 ${fullWidth} ${fullHeight}`) // size is inverse of what you want, to scale down - need to multiply by 2
 	.append('g')
 		.attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-const data = [
-	{score: 63, subject: 'Mathematics'},
-	{score: 82, subject: 'Geography'},
-	{score: 74, subject: 'Spelling'},
-	{score: 97, subject: 'Reading'},
-	{score: 52, subject: 'Science'},
-	{score: 95, subject: 'Chemistry'},
-	{score: 100, subject: 'Physics'},
-	{score: 73, subject: 'ASL'},
-];
-
-const yScale = d3.scaleLinear()
-	.domain([0, 100]) // defines y axis scale values
-	.range([height, 0]); // because y goes in reverse in svg's
-
-const yAxis = d3.axisLeft(yScale) // create y axis
-	//.ticks(5, ); // amount of ticks to show on axis, second param label
-	//.tickValues([8, 17, 29, 78]) // custom tick values
-svg.call(yAxis); // add axis to chart
-
-const xScale = d3.scaleBand()
-	.paddingInner(0.05)
-	.domain(data.map(d => d.subject))
-	.range([0, width]);
-
-const xAxis = d3.axisBottom(xScale);
-
-svg
-	.append('g')
-		.attr('transform', `translate(0, ${height})`)
-	.call(xAxis)
-	.selectAll('text') // modify x-axis labels to be rotated 
-	.style('text-anchor', 'end')
-	.attr('transform', 'rotate(-45)');
+// load data
+d3.json('./data/data.json', (err, data) => {
 	
 
+	const yScale = d3.scaleLinear()
+		.domain(d3.extent(data, d => d.expectancy)) // defines y axis scale values as life expectancy from data
+		.range([height, 0]) // because y goes in reverse in svg's
+		.nice()
 
-svg.selectAll('rect')
-	.data(data)
-	.enter()
-	.append('rect')
-	.attr('x', d => xScale(d.subject))
-	.attr('y', d => yScale(d.score))
-	.attr('width', d => xScale.bandwidth())
-	.attr('height', d => height - yScale(d.score));
+	const yAxis = d3.axisLeft(yScale) // create y axis
+		//.ticks(5, ); // amount of ticks to show on axis, second param label
+		//.tickValues([8, 17, 29, 78]) // custom tick values
+	svg.call(yAxis); // add axis to chart
+
+	const xScale = d3.scaleLinear()
+		.domain(d3.extent(data, d => d.cost))
+		.range([0, width])
+		.nice();
+
+	const xAxis = d3.axisBottom(xScale)
+		.ticks(5);
+
+	svg
+		.append('g')
+			.attr('transform', `translate(0, ${height})`)
+		.call(xAxis)
+
+	// scale for circle sizes
+	const rScale = d3.scaleSqrt()
+		.domain([0, d3.max(data, d => d.population)]) // plot population size
+		.range([0, 40]); // max size of circle
+
+	// add circles to the chart
+	const circles =	svg
+		.selectAll('.ball')
+		.data(data)
+		.enter()
+		.append('g')
+		.attr('class', 'ball')
+		.attr('transform', d => {
+			return `translate( ${xScale(d.cost)}, ${yScale(d.expectancy)} )`
+		})
+
+	// draw circles
+	circles
+		.append('circle')
+		.attr('cx', 0)
+		.attr('cy', 0)
+		.attr('r', d => rScale(d.population))
+
+	// add labels
+	circles
+		.append('text')
+		.style('text-anchor', 'middle')
+		.style('fill', 'black')
+		.attr('y', 4) // move down 4px
+		.text(d => d.code);
+
+});
+
+
+
+
+/**
+ * HELPERS
+ */
 
 function responsivefy(svg) {
   // get container + svg aspect ratio
