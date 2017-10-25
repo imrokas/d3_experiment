@@ -1,16 +1,16 @@
-var data = [
+const data = [
   {name: 'Alice', math: 37,   science: 62,   language: 54},
   {name: 'Billy', math: null, science: 34,   language: 85},
   {name: 'Cindy', math: 86,   science: 48,   language: null},
-  {name: 'David', math: 44,   science: null, language: 65},
-  {name: 'Emily', math: 59,   science: 73,   language: 29}
+  {name: 'David', math: 144,   science: null, language: 65},
+  {name: 'Emily', math: 59,   science: 53,   language: 29}
 ];
 
-var margin = { top: 10, right: 10, bottom: 30, left: 30 };
-var width = 400 - margin.left - margin.right;
-var height = 535 - margin.top - margin.bottom;
+const margin = { top: 10, right: 10, bottom: 30, left: 30 };
+const width = 400 - margin.left - margin.right;
+const height = 535 - margin.top - margin.bottom;
 
-var svg = d3.select('.chart')
+const svg = d3.select('.chart')
   .append('svg')
     .attr('width', width + margin.left + margin.right)
     .attr('height', height + margin.top + margin.bottom)
@@ -18,7 +18,7 @@ var svg = d3.select('.chart')
   .append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-var xScale = d3.scaleBand()
+const xScale = d3.scaleBand()
   .domain(data.map(d => d.name))
   .range([0, width])
   .padding(0.2);
@@ -27,17 +27,17 @@ svg
     .attr('transform', `translate(0, ${height})`)
   .call(d3.axisBottom(xScale));
 
-var yScale = d3.scaleLinear()
+const yScale = d3.scaleLinear()
   .domain([0, 100])
   .range([height, 0]);
-svg
+const yAxis = svg
   .append('g')
   .call(d3.axisLeft(yScale));
 
 function render (subject = 'math') {
-  var t = d3.transition().duration(1000);
+  const t = d3.transition().duration(1000);
   // figure elements that will get updated
-  var update = svg.selectAll('rect')
+  const update = svg.selectAll('rect')
     .data(data.filter(d => d[subject]), d => d.name);
 
   // animate and remove elements with null
@@ -47,6 +47,14 @@ function render (subject = 'math') {
     .attr('y', height)
     .attr('height', 0)
     .remove();
+
+  // calculate new y-axis values
+  yScale.domain([0, d3.max(data, d => d[subject])])
+  // update and animate y-axis
+  yAxis
+    .transition(t)
+    .delay(500)
+    .call(d3.axisLeft(yScale));
 
   // animate old values that will change
   update
