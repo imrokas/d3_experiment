@@ -1,8 +1,8 @@
 // SIMPLE LINE CHART
 const margin = {
-	top: 25,
-	right: 25,
-	bottom: 25,
+	top: 10,
+	right: 20,
+	bottom: 30,
 	left: 30
 };
 // calculate width, height for inner elements,
@@ -20,35 +20,34 @@ const svg = d3.select('.chart')
 
 // load data
 d3.json('./data/data.json', (err, data) => {
-	// helper function to parse time
 	const parseTime = d3.timeParse('%Y/%m/%d');
 
-	// parse and setup data
 	data.forEach(company => {
 		company.values.forEach(d => {
-			d.date = parseTime(d.date); // parse date
-			d.close = +d.close; // convert to numbers
+			d.date = parseTime(d.date);
+			d.close = +d.close;
 		});
 	});
 
 	// x-axis
 	const xScale = d3.scaleTime()
 		.domain([
-			d3.min(data, co => d3.min(co.values, d => d.date)),
-			d3.max(data, co => d3.max(co.values, d => d.date)),
+			d3.min(data, company => d3.min(company.values, d => d.date)),
+			d3.max(data, company => d3.max(company.values, d => d.date))
 		])
 		.range([0, width]);
 
 	svg
 		.append('g')
 			.attr('transform', `translate(0, ${height})`)
-		.call(d3.axisBottom(xScale).ticks(5));
+		.call(d3.axisBottom(xScale).ticks(5))
+
 
 	// y-axis
 	const yScale = d3.scaleLinear()
 		.domain([
-			d3.min(data, co => d3.min(co.values, d => d.close)),
-			d3.max(data, co => d3.max(co.values, d => d.close))
+			d3.min(data, company => d3.min(company.values, d => d.close)),
+			d3.max(data, company => d3.max(company.values, d => d.close))
 		])
 		.range([height, 0]);
 
@@ -56,26 +55,23 @@ d3.json('./data/data.json', (err, data) => {
 		.append('g')
 		.call(d3.axisLeft(yScale));
 
-
-	// create line helper funtion
-	const drawLine = d3.line()
+	// area generator
+	const generateArea = d3.area()
 		.x(d => xScale(d.date))
-		.y(d => yScale(d.close))
-		.curve(d3.curveCatmullRom.alpha(0.5)); // add curve smoothing
+		.y0(yScale(yScale.domain()[0])) // get minimun value from yScale domain
+		.y1(d => yScale(d.close)); // top of area
 
-	// draw lines
 	svg
-		.selectAll('.line')
+		.selectAll('.area')
 		.data(data)
 		.enter()
 		.append('path')
-		.attr('class', 'line')
-		.attr('d', d => drawLine(d.values))
-		.style('stroke', (d, i) => ['#FF9900', '#3369E8'][i]) // map colors to lines
+		.attr('class', 'area')
+		.attr('d', d => generateArea(d.values))
+		.style('stroke', (d, i) => ['#FF9900', '#3369E8'][i])
     .style('stroke-width', 2)
-    .style('fill', 'none'); // don't fill in path
-
-
+    .style('fill', (d, i) => ['#FF9900', '#3369E8'][i])
+    .style('fill-opacity', 0.5);
 });
 
 
