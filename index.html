@@ -4,21 +4,22 @@
 		<meta charset="utf-8">
 		<title>D3 v4 Experiments</title>
 		<style>
-	    .block {
+	    .chart {
 	    	background: lightgray;
 	    	border: 1px solid black;
-	    	width: 100px;
-	    	height: 100px;
-	    	margin-bottom: 25px;
+	    }
+	    rect {
+	    	fill: forestgreen;
 	    }
 	  </style>
 		<script src="https://d3js.org/d3.v4.min.js"></script>
 	</head>
 	<body>
-		<div class="block a"></div>
-		<div class="block b"></div>
-		<button onClick="go()">GO!</button>
-		<button onClick="goNow()">GO NOW!</button>
+		<div class="chart"></div>
+
+		<button onClick="render()">Math</button>
+		<button onClick="render('science')">Science</button>
+		<button onClick="render('language')">Language</button>
 
 		<script src="src/app.js"></script>
 	</body>
