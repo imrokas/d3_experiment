@@ -1,8 +1,8 @@
-// SIMPLE BAR CHART
+// SIMPLE LINE CHART
 const margin = {
 	top: 25,
 	right: 25,
-	bottom: 60,
+	bottom: 25,
 	left: 30
 };
 // calculate width, height for inner elements,
@@ -20,61 +20,61 @@ const svg = d3.select('.chart')
 
 // load data
 d3.json('./data/data.json', (err, data) => {
-	
+	// helper function to parse time
+	const parseTime = d3.timeParse('%Y/%m/%d');
 
-	const yScale = d3.scaleLinear()
-		.domain(d3.extent(data, d => d.expectancy)) // defines y axis scale values as life expectancy from data
-		.range([height, 0]) // because y goes in reverse in svg's
-		.nice()
+	// parse and setup data
+	data.forEach(company => {
+		company.values.forEach(d => {
+			d.date = parseTime(d.date); // parse date
+			d.close = +d.close; // convert to numbers
+		});
+	});
 
-	const yAxis = d3.axisLeft(yScale) // create y axis
-		//.ticks(5, ); // amount of ticks to show on axis, second param label
-		//.tickValues([8, 17, 29, 78]) // custom tick values
-	svg.call(yAxis); // add axis to chart
-
-	const xScale = d3.scaleLinear()
-		.domain(d3.extent(data, d => d.cost))
-		.range([0, width])
-		.nice();
-
-	const xAxis = d3.axisBottom(xScale)
-		.ticks(5);
+	// x-axis
+	const xScale = d3.scaleTime()
+		.domain([
+			d3.min(data, co => d3.min(co.values, d => d.date)),
+			d3.max(data, co => d3.max(co.values, d => d.date)),
+		])
+		.range([0, width]);
 
 	svg
 		.append('g')
 			.attr('transform', `translate(0, ${height})`)
-		.call(xAxis)
+		.call(d3.axisBottom(xScale).ticks(5));
 
-	// scale for circle sizes
-	const rScale = d3.scaleSqrt()
-		.domain([0, d3.max(data, d => d.population)]) // plot population size
-		.range([0, 40]); // max size of circle
+	// y-axis
+	const yScale = d3.scaleLinear()
+		.domain([
+			d3.min(data, co => d3.min(co.values, d => d.close)),
+			d3.max(data, co => d3.max(co.values, d => d.close))
+		])
+		.range([height, 0]);
 
-	// add circles to the chart
-	const circles =	svg
-		.selectAll('.ball')
+	svg
+		.append('g')
+		.call(d3.axisLeft(yScale));
+
+
+	// create line helper funtion
+	const drawLine = d3.line()
+		.x(d => xScale(d.date))
+		.y(d => yScale(d.close))
+		.curve(d3.curveCatmullRom.alpha(0.5)); // add curve smoothing
+
+	// draw lines
+	svg
+		.selectAll('.line')
 		.data(data)
 		.enter()
-		.append('g')
-		.attr('class', 'ball')
-		.attr('transform', d => {
-			return `translate( ${xScale(d.cost)}, ${yScale(d.expectancy)} )`
-		})
+		.append('path')
+		.attr('class', 'line')
+		.attr('d', d => drawLine(d.values))
+		.style('stroke', (d, i) => ['#FF9900', '#3369E8'][i]) // map colors to lines
+    .style('stroke-width', 2)
+    .style('fill', 'none'); // don't fill in path
 
-	// draw circles
-	circles
-		.append('circle')
-		.attr('cx', 0)
-		.attr('cy', 0)
-		.attr('r', d => rScale(d.population))
-
-	// add labels
-	circles
-		.append('text')
-		.style('text-anchor', 'middle')
-		.style('fill', 'black')
-		.attr('y', 4) // move down 4px
-		.text(d => d.code);
 
 });
 
