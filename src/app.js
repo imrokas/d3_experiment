@@ -1,8 +1,8 @@
-// RESPONSIVEFY CHART
+// SIMPLE BAR CHART
 const margin = {
 	top: 25,
-	right: 0,
-	bottom: 30,
+	right: 25,
+	bottom: 60,
 	left: 30
 };
 // calculate width, height for inner elements,
@@ -19,11 +19,16 @@ const svg = d3.select('.chart')
 	.append('g')
 		.attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-svg.append('rect')
-	.attr('width', width)
-	.attr('height', height)
-	.style('fill', 'lightblue')
-	.style('stroke', 'green')
+const data = [
+	{score: 63, subject: 'Mathematics'},
+	{score: 82, subject: 'Geography'},
+	{score: 74, subject: 'Spelling'},
+	{score: 97, subject: 'Reading'},
+	{score: 52, subject: 'Science'},
+	{score: 95, subject: 'Chemistry'},
+	{score: 100, subject: 'Physics'},
+	{score: 73, subject: 'ASL'},
+];
 
 const yScale = d3.scaleLinear()
 	.domain([0, 100]) // defines y axis scale values
@@ -34,18 +39,31 @@ const yAxis = d3.axisLeft(yScale) // create y axis
 	//.tickValues([8, 17, 29, 78]) // custom tick values
 svg.call(yAxis); // add axis to chart
 
-const xScale = d3.scaleTime()
-	.domain([new Date(2017, 9, 24), new Date(2017, 10, 24)])
+const xScale = d3.scaleBand()
+	.paddingInner(0.05)
+	.domain(data.map(d => d.subject))
 	.range([0, width]);
 
-const xAxis = d3.axisBottom(xScale)
-	.ticks(5);
+const xAxis = d3.axisBottom(xScale);
 
 svg
 	.append('g')
 		.attr('transform', `translate(0, ${height})`)
-	.call(xAxis);
+	.call(xAxis)
+	.selectAll('text') // modify x-axis labels to be rotated 
+	.style('text-anchor', 'end')
+	.attr('transform', 'rotate(-45)');
+	
 
+
+svg.selectAll('rect')
+	.data(data)
+	.enter()
+	.append('rect')
+	.attr('x', d => xScale(d.subject))
+	.attr('y', d => yScale(d.score))
+	.attr('width', d => xScale.bandwidth())
+	.attr('height', d => height - yScale(d.score));
 
 function responsivefy(svg) {
   // get container + svg aspect ratio
